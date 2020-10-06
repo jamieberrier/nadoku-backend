@@ -2,7 +2,9 @@ class Api::V1::SessionsController < ApplicationController
   before_action :set_user, only: %i[create]
 
   def create
-    if @user && @user.authenticate(params[:session][:password])
+    # SafeNavigation
+    ## This cop transforms usages of a method call safeguarded by a non `nil` check for the variable whose method is being called to safe navigation (`&.`).
+    if @user&.authenticate(params[:session][:password])
       session[:user_id] = @user.id
       render json: UserSerializer.new(@user)
     else
@@ -12,14 +14,15 @@ class Api::V1::SessionsController < ApplicationController
     end
   end
 
-  def get_current_user
-    if logged_in?
-      render json: UserSerializer.new(current_user)
-    else
-      render json: {
-        error: 'No one logged in'
-      }
-    end
+  def render_current_user
+    render json: UserSerializer.new(current_user) if logged_in?
+  end
+
+  def destroy
+    session.clear
+    render json: {
+      notice: 'Successfully logged out'
+    }, status: :ok
   end
 
   private
