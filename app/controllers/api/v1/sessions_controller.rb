@@ -15,7 +15,12 @@ class Api::V1::SessionsController < ApplicationController
   end
 
   def render_current_user
-    render json: UserSerializer.new(current_user) if logged_in?
+    if logged_in?
+      render json: UserSerializer.new(current_user)
+    else
+      @user = User.new(email: '', password: '')
+      render json: UserSerializer.new(@user)
+    end
   end
 
   def destroy
