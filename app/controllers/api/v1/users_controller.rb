@@ -1,18 +1,6 @@
 class Api::V1::UsersController < ApplicationController
   before_action :set_user, only: %i[show update destroy]
 
-  # GET /users
-  #def index
-  #  @users = User.all
-
-  #  render json: UserSerializer.new(@users)
-  #end
-
-  # GET /users/1
-  #def show
-  #  render json: UserSerializer.new(@user)
-  #end
-
   # POST /users
   def create
     @user = User.new(user_params)
@@ -21,7 +9,7 @@ class Api::V1::UsersController < ApplicationController
       session[:user_id] = @user.id
       render json: UserSerializer.new(@user), status: :created
     else
-      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+      render_with_error(@user)
     end
   end
 
@@ -30,7 +18,7 @@ class Api::V1::UsersController < ApplicationController
     if @user.update(user_params)
       render json: UserSerializer.new(@users)
     else
-      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+      render_with_error(@user)
     end
   end
 
@@ -49,5 +37,11 @@ class Api::V1::UsersController < ApplicationController
   # Only allow a trusted parameter "white list" through.
   def user_params
     params.require(:user).permit(:email, :username, :password, :password_confirmation)
+  end
+
+  def render_with_error(user)
+    render json: {
+      errors: user.errors.full_messages
+    }, status: :unprocessable_entity
   end
 end
